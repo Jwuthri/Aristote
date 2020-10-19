@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  task:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: docker/task/Dockerfile
+    volumes:
+      - .:/aristote/src
+    restart: always
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/streamlit/Dockerfile
+    command: "streamlit run aristote/stream_app/app.py"
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/aristote/src
+    restart: always
+
+  notebook:
+    build:
+      context: .
+      dockerfile: docker/jupyterlab/Dockerfile
+    command: "jupyter lab --ip=0.0.0.0 --allow-root"
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/aristote/src
+    restart: always
