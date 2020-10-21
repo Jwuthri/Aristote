@@ -9,7 +9,7 @@ from nltk.stem import LancasterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 
-from aristote.preprocessing.tokenization import SentenceTokenization
+from aristote.preprocessing.tokenization import TextTokenizer
 
 
 class TextNormalization(object):
@@ -40,10 +40,11 @@ class TextNormalization(object):
             return self.lemstem.stem(word)
 
     def text_stemming(self, text):
-        words = SentenceTokenization().tokenize(text)
+        tokenizer = TextTokenizer()
+        words = tokenizer.text_to_token(text)
         stemmed = [self.word_stemming(word) for word in words]
 
-        return SentenceTokenization().detokenize(stemmed)
+        return tokenizer.detokenize(stemmed)
 
     @staticmethod
     def text_demojis(text, how_replace=""):

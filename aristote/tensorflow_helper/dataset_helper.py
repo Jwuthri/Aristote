@@ -20,6 +20,7 @@ class TensorflowDataset(TensorflowModel):
         self.buffer_size = kwargs.get('buffer_size', 512)
         self.batch_size = kwargs.get('batch_size', 512)
         self.label_encoder = self.init_label_encoder(label_type)
+        self.classes_thresholds = dict()
         self.label_encoder_classes = dict()
         self.label_encoder_classes_number = 0
         super().__init__(architecture, label_type, name, **kwargs)
@@ -34,6 +35,7 @@ class TensorflowDataset(TensorflowModel):
     def fit_encoder(self, y):
         self.label_encoder.fit(y)
         self.label_encoder_classes = dict(enumerate(self.label_encoder.classes_))
+        self.classes_thresholds = {classe: 0.5 for classe in self.label_encoder.classes_}
         self.label_encoder_classes_number = len(self.label_encoder.classes_)
 
     @staticmethod

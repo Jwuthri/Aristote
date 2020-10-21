@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from aristote.feature_extraction.pretrained_embedding import PretrainedEmbedding
+from aristote.feature_extraction.sentence_encoder import SentenceEncoder
 from aristote.feature_extraction.tfidf import Tfidf
 
 
@@ -10,7 +10,7 @@ class Featuring(object):
     def __init__(self, model_name):
         self.model_name = model_name
         self.tfidf = Tfidf()
-        self.embedding = PretrainedEmbedding()
+        self.embedding = SentenceEncoder()
 
     def main(self):
         text = st.text_area("Enter the text to normalize here:")

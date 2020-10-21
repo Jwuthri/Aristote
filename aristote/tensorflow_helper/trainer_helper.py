@@ -81,5 +81,6 @@ class TensorflowTrainer(TensorflowDataset):
         self.export_info(self.model_info)
         self.export_metrics(self.metrics)
         self.export_label_encoder(self.label_encoder)
+        self.export_thresholds(self.classes_thresholds)
         if self.do_zip_model:
             self.zip_model()

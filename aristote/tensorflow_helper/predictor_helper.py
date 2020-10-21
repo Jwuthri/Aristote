@@ -1,22 +1,49 @@
-import os
-import json
+import operator
 
-from aristote.settings import MODEL_PATH
+import numpy as np
+
+from aristote.tensorflow_helper.saver_helper import TensorflowLoaderSaver
 from aristote.tensorflow_helper.model_helper import TensorflowModel
+from aristote.utils import predict_format
 
 
-class TensorflowPredicter(TensorflowModel):
+class TensorflowPredictor(TensorflowModel, TensorflowLoaderSaver):
+    """Module to predict saved model."""
 
-    def __init(self, base_path=MODEL_PATH, name='model_name', **kwargs):
-        path = os.path.join(base_path, name, "model.json")
-        info = self.infos(path)
-        architecture = info.get('architecture')
-        label_type = info.get('label_type')
-        super().__init__(architecture, label_type, name, base_path=base_path, **kwargs)
+    def __init__(self, name, model_load, **kwargs):
+        self.name = name
+        TensorflowLoaderSaver.__init__(self, name, model_load, **kwargs)
+        self.info = self.load_info()
+        self.info['model_load'] = model_load
+        self.label_encoder = self.load_label_encoder()
+        self.classes_thresholds = self.load_thresholds()
+        TensorflowModel.__init__(self, name=name, **self.info)
+        self.build_model()
+        self.load_weights(self.model)
 
-    @staticmethod
-    def infos(path):
-        with open(path, "rb") as json_file:
-            info = json.load(json_file)
+    @predict_format
+    def predict_multi_label(self, text, thresholds=None):
+        thresholds = thresholds if thresholds else self.classes_thresholds
+        predictions = [dict(zip(self.label_encoder.classes_.tolist(), x)) for x in self.model.predict(text).tolist()]
+        filtered_predictions = [
+            [label for label, proba in prediction.items() if proba >= thresholds[label]] for prediction in predictions
+        ]
 
-        return info
+        return filtered_predictions
+
+    @predict_format
+    def predict_multi_class(self, text):
+        predictions = self.model.predict(text).tolist()
+        predictions = [self.label_encoder.classes_[np.argmax(prediction)] for prediction in predictions]
+        # filtered_predictions = sorted(predictions.items(), key=operator.itemgetter(1), reverse=True)[0]
+
+        return predictions
+
+    @predict_format
+    def predict(self, text):
+        predictions = [dict(zip(self.label_encoder.classes_.tolist(), x)) for x in self.model.predict(text).tolist()]
+        filtered_predictions = [
+            [(label, proba) for label, proba in prediction.items() if proba >= self.classes_thresholds[label]] for prediction in predictions
+        ]
+
+        return filtered_predictions

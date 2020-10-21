@@ -110,27 +110,27 @@ cleaned_text
 ```
 
 ```python
-from aristote.preprocessing.tokenization import SentenceTokenization, SequenceTokenization
+from aristote.preprocessing.tokenization import SentenceSplitter, SequenceSplitter
 
 # Sentence Tokenization
 sentence = "Let me tell you something you already know."
-tokens = SentenceTokenization().tokenize(sentence)
+tokens = SentenceSplitter().tokenize(sentence)
 tokens
 >> ['Let', 'me', 'tell', 'you', 'something', 'you', 'already', 'know', '.']
 
 # Sentence DeTokenization
-sentence = SentenceTokenization().detokenize(tokens)
+sentence = SentenceSplitter().detokenize(tokens)
 sentence
 >> 'Let me tell you something you already know.'
 
 # Sequence Tokenization
 sequence = "Let me tell you something you already know. The world ain’t all sunshine and rainbows."
-sentences = SequenceTokenization().tokenize(sequence)
+sentences = SequenceSplitter().tokenize(sequence)
 sentences
 >> ['Let me tell you something you already know.', 'The world ain’t all sunshine and rainbows.']
 
 # Sequence DeTokenization
-sequence = SequenceTokenization().detokenize(sentences)
+sequence = SequenceSplitter().detokenize(sentences)
 sequence
 >> 'Let me tell you something you already know. The world ain’t all sunshine and rainbows.'
 ```
@@ -194,7 +194,7 @@ dataset = pd.read_csv(dataset_path)
 
 # Binary classifier
 x, y, label_type, epochs = "feature", "binary", "binary-class", 2
-dataset = remove_rows_contains_null(dataset, x)
+dataset = dataset[dataset[x].notnull()]
 dataset = remove_rows_contains_null(dataset, y)
 architecture = [('DENSE', 256), ("DROPOUT", 0.2), ('DENSE', 128)]
 trainer = Trainer(dataset, x, y, label_type, architecture, epochs=epochs, use_comet=True)

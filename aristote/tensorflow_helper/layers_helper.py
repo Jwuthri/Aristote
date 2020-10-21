@@ -1,13 +1,13 @@
 import tensorflow as tf
 
-from aristote.feature_extraction.pretrained_embedding import PretrainedEmbedding
+from aristote.feature_extraction.sentence_encoder import SentenceEncoder
 
 
 def get_input_layer(use_pretrained, embedding_size, input_size, vocab_size):
     """Create the input layer, with embedding."""
     if use_pretrained:
         input_layer = tf.keras.Input((), dtype=tf.string)
-        layer = PretrainedEmbedding().model(input_layer)
+        layer = SentenceEncoder().model(input_layer)
         layer = tf.keras.layers.Reshape(target_shape=(1, 512))(layer)
     else:
         input_layer = tf.keras.Input((input_size))

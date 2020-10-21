@@ -6,7 +6,6 @@ import numpy as np
 
 
 def highlight_text_html(text, mark_color='purple'):
-    """Create html tag"""
     map_color = {
         "purple": "aa9cfc", "blue": "7aecec", "kaki": "bfe1d9",
         "orange": "feca74", "green": "bfeeb7", "magenta": "aa9cfc"
@@ -57,10 +56,10 @@ def predict_format(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if isinstance(kwargs['x'], str):
-            kwargs['x'] = np.asarray([kwargs['x']])
-        if isinstance(kwargs['x'], list):
-            kwargs['x'] = np.asarray(kwargs['x'])
+        if isinstance(kwargs['text'], str):
+            kwargs['text'] = np.asarray([kwargs['text']])
+        if isinstance(kwargs['text'], list):
+            kwargs['text'] = np.asarray(kwargs['text'])
 
         return func(*args, **kwargs)
 

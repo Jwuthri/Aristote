@@ -1,6 +1,6 @@
 import pytest
 
-from aristote.preprocessing.tokenization import SentenceTokenization, SequenceTokenization
+from aristote.preprocessing.tokenization import SentenceSplitter, SequenceSplitter
 from aristote.preprocessing.normalization import TextNormalization
 
 
@@ -8,17 +8,17 @@ class TestTokenization(object):
 
     def test_sentence_tokenization_tokenize(self):
         sentence = "Let me tell you something you already know."
-        tokens = SentenceTokenization().tokenize(sentence)
+        tokens = SentenceSplitter().tokenize(sentence)
         assert tokens == ['Let', 'me', 'tell', 'you', 'something', 'you', 'already', 'know', '.']
 
     def test_sentence_tokenization_detokenize(self):
         tokens = ['Let', 'me', 'tell', 'you', 'something', 'you', 'already', 'know', '.']
-        sentence = SentenceTokenization().detokenize(tokens)
+        sentence = SentenceSplitter().detokenize(tokens)
         assert sentence == "Let me tell you something you already know."
 
     def test_sequence_tokenization_tokenize(self):
         sequence = "Let me tell you something you already know. The world ain’t all sunshine and rainbows."
-        sentences = SequenceTokenization().tokenize(sequence)
+        sentences = SequenceSplitter().tokenize(sequence)
         assert sentences == [
             'Let me tell you something you already know.',
             'The world ain’t all sunshine and rainbows.'
@@ -29,7 +29,7 @@ class TestTokenization(object):
             'Let me tell you something you already know.',
             'The world ain’t all sunshine and rainbows.'
         ]
-        sequence = SequenceTokenization().detokenize(sentences)
+        sequence = SequenceSplitter().detokenize(sentences)
         assert sequence == "Let me tell you something you already know. The world ain’t all sunshine and rainbows."
 
 

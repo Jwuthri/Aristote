@@ -1,13 +1,13 @@
 import streamlit as st
 
-from aristote.preprocessing.tokenization import SequenceTokenization
+from aristote.preprocessing.tokenization import SequenceSplitter
 from aristote.preprocessing.normalization import TextNormalization
 
 
 class Normalization(object):
 
     def __init__(self):
-        self.sequencer = SequenceTokenization()
+        self.sequencer = SequenceSplitter()
         self.normalizer = TextNormalization()
 
     def main(self):
@@ -24,5 +24,5 @@ class Normalization(object):
                     fct = getattr(self.normalizer, transformation)
                     sentence = fct(sentence)
                 lst_sentences.append(sentence)
-            new_text = SequenceTokenization().detokenize(lst_sentences)
+            new_text = SequenceSplitter().detokenize(lst_sentences)
             st.markdown(new_text)

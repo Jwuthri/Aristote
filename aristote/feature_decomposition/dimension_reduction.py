@@ -3,14 +3,15 @@ from sklearn.decomposition import PCA, TruncatedSVD, SparsePCA
 from sklearn import preprocessing
 from umap import UMAP
 
+from aristote.tensorflow_helper.saver_helper import TensorflowLoaderSaver
 from aristote.settings import MODEL_PATH
 from aristote.utils import timer
 
 
-class Decomposition(object):
+class Decomposition(TensorflowLoaderSaver):
 
     def __init__(self, model='QDA', n_components=2, base_path=MODEL_PATH, name="dim_reduction", model_load=False):
-        super().__init__(base_path, name, model_load)
+        super().__init__(name, model_load, base_path=base_path)
         self.model = model.upper()
         self.n_components = n_components
         self.model = self.get_model(n_components=n_components)

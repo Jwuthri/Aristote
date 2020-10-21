@@ -2,36 +2,23 @@ import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from aristote.utils import timer
+from aristote.tensorflow_helper.saver_helper import TensorflowLoaderSaver
 from aristote.settings import MODEL_PATH
-from aristote.utils import ModelSaverLoader
+from aristote.utils import timer, predict_format
 
 
-class Tfidf(ModelSaverLoader):
+class Tfidf(TensorflowLoaderSaver):
 
 	def __init__(
-			self, bigrams=False, unigrams=True, analyzer='word',
-			base_path=MODEL_PATH, name="tf_idf", model_load=False):
-		super().__init__(base_path, name, model_load)
-		self.unigrams = unigrams
-		self.bigrams = bigrams
+			self, bigrams=False, unigrams=True, analyzer='word', base_path=MODEL_PATH, name="tf_idf", model_load=False):
+		super().__init__(name, model_load, base_path=base_path)
+		self.unigrams = 1 if unigrams else 2
+		self.bigrams = 2 if bigrams else 1
 		self.analyzer = analyzer
-		self.ngram_range = self._get_ngrams_range()
 		self.tfidf = self.get_model()
 
-	def _get_ngrams_range(self):
-		contains_one_of = self.unigrams or self.bigrams
-		assert contains_one_of is True
-		if self.unigrams:
-			if self.bigrams:
-				return 1, 2
-			else:
-				return 1, 1
-		else:
-			return 2, 2
-
 	def get_model(self):
-		return TfidfVectorizer(analyzer=self.analyzer, ngram_range=self.ngram_range)
+		return TfidfVectorizer(analyzer=self.analyzer, ngram_range=(self.unigrams, self.bigrams))
 
 	@timer
 	def fit_model(self, documents):
@@ -39,11 +26,9 @@ class Tfidf(ModelSaverLoader):
 		self.tfidf.fit(documents)
 
 	@timer
-	def transform(self, document):
-		if isinstance(document, str):
-			document = list(document)
-
-		return self.tfidf.transform(document).toarray()
+	@predict_format
+	def transform(self, text):
+		return self.tfidf.transform(text).toarray()
 
 	@property
 	def get_features_name(self):

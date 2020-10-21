@@ -37,15 +37,16 @@ class TensorflowLoaderSaver(object):
 
         return {
             "path": base_dir,
-            "weights_path":  os.path.join(base_dir, 'weights'),
             "model_path": os.path.join(base_dir, 'model.pkl'),
+            "weights_path":  os.path.join(base_dir, 'weights'),
+            "metrics_path": os.path.join(base_dir, "metrics.json"),
             "model_plot_path":  os.path.join(base_dir, "model.jpg"),
             "model_info_path": os.path.join(base_dir, "model.json"),
-            "metrics_path": os.path.join(base_dir, "metrics.json"),
-            "label_encoder_path": os.path.join(base_dir, "label_encoder.pkl"),
+            "checkpoint_path": os.path.join(base_dir, "checkpoint"),
             "tokenizer_path": os.path.join(base_dir, "tokenizer.pkl"),
             "tensorboard_path": os.path.join(base_dir, "tensorboard"),
-            "checkpoint_path": os.path.join(base_dir, "checkpoint"),
+            "label_encoder_path": os.path.join(base_dir, "label_encoder.pkl"),
+            "classes_thresholds_path": os.path.join(base_dir, "classes_thresholds.json"),
         }
 
     def export_tf_model_plot(self, model):
@@ -109,6 +110,17 @@ class TensorflowLoaderSaver(object):
         model = pickle.load(open(self.paths['model_path'], "rb"))
 
         return model
+
+    def export_thresholds(self, thresholds):
+        with open(self.paths['classes_thresholds_path'], 'w') as outfile:
+            json.dump(thresholds, outfile)
+            print(f"Classes thresholds have been exported here => {self.paths['classes_thresholds_path']}")
+
+    def load_thresholds(self):
+        with open(self.paths['classes_thresholds_path'], "rb") as json_file:
+            thresholds = json.load(json_file)
+
+        return thresholds
 
     def zip_model(self):
         zip_path = shutil.make_archive(

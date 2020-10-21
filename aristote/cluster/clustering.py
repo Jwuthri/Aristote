@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 
-from hdbscan import HDBSCAN
 from sklearn.cluster import KMeans, AgglomerativeClustering
+from hdbscan import HDBSCAN
 
-from aristote.utils import timer
+from aristote.tensorflow_helper.saver_helper import TensorflowLoaderSaver
 from aristote.settings import MODEL_PATH
-from aristote.utils import ModelSaverLoader
+from aristote.utils import timer
 
 
-class Clustering(ModelSaverLoader):
+class Clustering(TensorflowLoaderSaver):
 
     def __init__(self, model_name='KMEANS', base_path=MODEL_PATH, name="clustering", model_load=False):
-        super().__init__(base_path, name, model_load)
+        super().__init__(name, model_load, base_path=base_path)
         self.model_name = model_name.upper()
         self.model = self.get_model()
 

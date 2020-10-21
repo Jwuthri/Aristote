@@ -9,13 +9,14 @@ class TensorflowModel(TensorflowLoaderSaver):
     def __init__(self, architecture, label_type, name, **kwargs):
         self.architecture = architecture
         self.label_type = label_type
-        self.label_encoder_classes_number = 1
+        self.label_encoder_classes_number = kwargs.get('label_encoder_classes_number', 1)
         self.input_size = kwargs.get('input_size', 128)
         self.embedding_size = kwargs.get('embedding_size', 256)
         self.vocab_size = kwargs.get('vocab_size', 200000)
         self.pretrained_embedding = kwargs.get('pretrained_embedding', True)
         self.model = tf.keras.Sequential()
-        super().__init__(name, False, **kwargs)
+        model_load = kwargs.pop('model_load', False)
+        super().__init__(name, model_load, **kwargs)
         exception_message = f"label_type should be in ['binary-class', 'multi-label', 'multi-class'] not {label_type}"
         assert label_type in ['binary-class', 'multi-label', 'multi-class'], exception_message
 

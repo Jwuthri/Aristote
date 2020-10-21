@@ -7,10 +7,10 @@ from aristote.tensorflow_helper.trainer_helper import TensorflowTrainer
 
 
 if __name__ == '__main__':
-    dataset_path = os.path.join(DATASET_PATH, "sentiment.csv")
+    dataset_path = os.path.join(DATASET_PATH, "french_prediction.csv")
     architecture = [('LCNN', 512), ("GLOBAL_AVERAGE_POOL", 0), ("DROPOUT", 0.1), ('DENSE', 256)]
-    dataset = pd.read_csv(dataset_path, nrows=1000)
-    x_col, y_col, label_type, epochs, name = "feature", "single", "multi-class", 5, "sentiment"
+    dataset = pd.read_csv(dataset_path)
+    x_col, y_col, label_type, epochs, name = "processes", None, "multi-class", 5, "phrase"
 
     projects = {
         "intent": "intent-classifier",
