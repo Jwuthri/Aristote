@@ -25,26 +25,8 @@ class BayesianOptimizer(TensorflowPredictor):
         """Test on new thresholds to see the improvements."""
         y_pred = self.predict_multi_label(text=self.dataset[self.x].values, thresholds=thresholds)
         y_true = TensorflowDataset.clean_y(self.dataset[self.y].values)
-        encoded_y_true = []
-        for row in y_true:
-            l = list()
-            for label in self.label_encoder.classes_:
-                if label in row:
-                    l.append(1)
-                else:
-                    l.append(0)
-            encoded_y_true.append(l)
-
-        encoded_y_pred = []
-        for row in y_pred:
-            l = list()
-            for label in self.label_encoder.classes_:
-                if label in row:
-                    l.append(1)
-                else:
-                    l.append(0)
-            encoded_y_pred.append(l)
-        # y_true = self.label_encoder.transform(y_true)
+        encoded_y_true = [[1 if label in row else 0 for label in self.label_encoder.classes_] for row in y_true]
+        encoded_y_pred = [[1 if label in row else 0 for label in self.label_encoder.classes_] for row in y_pred]
         score = precision_recall_fscore_support(encoded_y_true, encoded_y_pred, average=average)
         score = dict(zip(['precisiom', 'recall', 'f1', 'support'], score))
 
