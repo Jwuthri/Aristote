@@ -5,7 +5,7 @@ import plotly.express as px
 from sklearn.model_selection import train_test_split
 
 from aristote.feature_decomposition.dimension_reduction import Decomposition
-from aristote.feature_extraction.sentence_encoder import SentenceEncoder
+from aristote.feature_extraction.sentence_encoder import MUSE
 from aristote.feature_extraction.tfidf import Tfidf
 from aristote.dataset.pandas import remove_rows_contains_null
 
@@ -14,7 +14,7 @@ class TextApplication(object):
 
     def __init__(self):
         self.models = ["", "LDA", "PCA", "SVD", "SPCA", "UMAP"]
-        self.embedding = SentenceEncoder()
+        self.embedding = MUSE()
         self.max_len = 10000
 
     def create_feature(self, data, feature):
