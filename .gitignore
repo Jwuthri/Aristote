@@ -172,7 +172,7 @@ fabric.properties
 # *.ipr 
 
 # Project related
-.idea
+.idea/
 distutils.spawn
 .bash_history
 
