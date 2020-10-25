@@ -3,6 +3,7 @@ import ast
 from tqdm import tqdm
 
 import tensorflow as tf
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer
 
@@ -15,9 +16,9 @@ class TensorflowDataset(TensorflowModel):
     """Module to generate dataset."""
 
     def __init__(self, architecture, label_type, name, **kwargs):
-        self.test_size = kwargs.get('test_size', 0.1)
-        self.buffer_size = kwargs.get('buffer_size', 512)
-        self.batch_size = kwargs.get('batch_size', 512)
+        self.test_size = kwargs.get('test_size', 0.15)
+        self.buffer_size = kwargs.get('buffer_size', 256)
+        self.batch_size = kwargs.get('batch_size', 256)
         self.label_encoder = self.init_label_encoder(label_type)
         self.classes_thresholds = dict()
         self.label_encoder_classes = dict()

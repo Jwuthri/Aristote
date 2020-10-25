@@ -4,6 +4,8 @@ import pickle
 import shutil
 import datetime
 
+import pandas as pd
+
 import tensorflow as tf
 
 from aristote.settings import MODEL_PATH
@@ -42,6 +44,7 @@ class TensorflowLoaderSaver(object):
             "metrics_path": os.path.join(base_dir, "metrics.json"),
             "model_plot_path":  os.path.join(base_dir, "model.jpg"),
             "model_info_path": os.path.join(base_dir, "model.json"),
+            "optimizer_score_path": os.path.join(base_dir, "optimizer_scores.csv"),
             "checkpoint_path": os.path.join(base_dir, "checkpoint"),
             "tokenizer_path": os.path.join(base_dir, "tokenizer.pkl"),
             "tensorboard_path": os.path.join(base_dir, "tensorboard"),
@@ -110,6 +113,13 @@ class TensorflowLoaderSaver(object):
         model = pickle.load(open(self.paths['model_path'], "rb"))
 
         return model
+
+    def export_optimizer_score(self, scores):
+        scores.to_csv(self.paths['optimizer_score_path'], index=False)
+        print(f"Optimizer scores have been exported here => {self.paths['optimizer_score_path']}")
+
+    def load_optimizer_score(self):
+        return pd.read_csv(self.paths['optimizer_score_path'])
 
     def export_thresholds(self, thresholds):
         with open(self.paths['classes_thresholds_path'], 'w') as outfile:

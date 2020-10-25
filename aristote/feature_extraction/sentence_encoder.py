@@ -1,5 +1,4 @@
 import bert
-# !pip install bert-for-tf2
 
 import numpy as np
 
