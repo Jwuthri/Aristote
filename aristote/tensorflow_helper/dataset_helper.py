@@ -1,7 +1,6 @@
 import ast
 
 from tqdm import tqdm
-import plotly.express as px
 
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
@@ -85,6 +84,8 @@ class TensorflowDataset(TensorflowModel):
 
     @staticmethod
     def plot_classes_distribution(data, column):
+        import plotly.express as px
+
         fig = px.histogram(data, x=column)
         fig.show()
 
@@ -92,7 +93,7 @@ class TensorflowDataset(TensorflowModel):
     def generate_dataset(self, data, x_column, y_column):
         data = data[data[x_column].notnull()]
         data = data[data[y_column].notnull()]
-        self.plot_classes_distribution(data, y_column)
+        # self.plot_classes_distribution(data, y_column)
         x = self.clean_x(data[x_column])
         y = self.clean_y(data[y_column]) if self.label_type == "multi-label" else data[y_column]
         self.fit_encoder(y)
