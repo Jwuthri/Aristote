@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.python.ops import nn, math_ops
 from tensorflow.python.framework import smart_cond, ops
 from tensorflow.python.ops import array_ops
+from tensorflow.keras.losses import Loss
 
 import tensorflow.keras.backend as K
 
@@ -82,3 +83,68 @@ def focal_loss(y_true, y_pred, gamma=2.0, alpha=1.0):
     reduced_fl = tf.reduce_max(fl, axis=1)
 
     return tf.reduce_mean(reduced_fl)
+
+
+def nmt_loss(y_pred, y):
+    sparsecategoricalcrossentropy = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
+    loss = sparsecategoricalcrossentropy(y_true=y, y_pred=y_pred)
+    mask = tf.logical_not(tf.math.equal(y, 0))
+    mask = tf.cast(mask, dtype=loss.dtype)
+
+    return tf.reduce_mean(mask * loss)
+
+
+def huber_loss_tuning(threshold=1):
+
+    def huber_loss(y_true, y_pred):
+        error = y_true - y_pred
+        is_smaller = tf.abs(error) <= threshold
+        small_error_loss = tf.square(error) / 2
+        big_error_loss = threshold * (tf.abs(error) - (0.5 * threshold))
+
+        return tf.where(is_smaller, small_error_loss, big_error_loss)
+
+    return huber_loss
+
+
+class HuberLoss(Loss):
+
+    def __init__(self, threshold=1):
+        self.threshold = threshold
+        super().__init__()
+
+    def call(self, y_true, y_pred):
+        error = y_true - y_pred
+        is_smaller = tf.abs(error) <= self.threshold
+        small_error_loss = tf.square(error) / 2
+        big_error_loss = self.threshold * (tf.abs(error) - (0.5 * self.threshold))
+
+        return tf.where(is_smaller, small_error_loss, big_error_loss)
+
+
+class ContrastiveLoss(Loss):
+
+    def __init__(self, margin=1):
+        self.margin = margin
+        super().__init__()
+
+    def call(self, y_true, y_pred):
+        square_pred = tf.square(y_pred)  # if similar
+        margin_square = tf.square(tf.maximum(self.margin, y_pred), 0)  # if different
+
+        return tf.reduce_mean(y_true * square_pred + (1 - y_true) * margin_square)
+
+
+class RMSE(Loss):
+
+    def __init__(self, smooth=1):
+        self.smooth = smooth
+        super().__init__()
+
+    def call(self, y_true, y_pred):
+        error = y_true - y_pred
+        sqr_error = tf.square(error)
+        mean_sqr_error = tf.reduce_mean(sqr_error)
+        sqrt_mean_sqr_error = tf.sqrt(mean_sqr_error)
+
+        return sqrt_mean_sqr_error

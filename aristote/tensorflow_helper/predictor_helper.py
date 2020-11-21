@@ -21,6 +21,7 @@ class TensorflowPredictor(TensorflowModel, TensorflowLoaderSaver):
         TensorflowModel.__init__(self, name=name, **self.info)
         self.build_model()
         self.load_weights(self.model)
+        breakpoint()
 
     def clean_text(self, text):
         text = self.normalizer.replace_char_rep(text=text)

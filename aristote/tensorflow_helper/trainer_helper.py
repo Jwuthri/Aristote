@@ -65,7 +65,7 @@ class TensorflowTrainer(TensorflowDataset):
 
     def train(self, data, x_col, y_col):
         os.mkdir(self.paths['path'])
-        train_dataset, val_dataset = self.generate_dataset(data, x_col, y_col)
+        train_dataset, val_dataset = self.generate_classification_dataset(data, x_col, y_col)
         self.build_model()
         self.compile_model()
 

@@ -1,3 +1,4 @@
+import re
 import ast
 
 from tqdm import tqdm
@@ -6,6 +7,7 @@ import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer
+from tensorflow.keras.preprocessing.text import Tokenizer
 
 from aristote.utils import timer
 from aristote.preprocessing.normalization import TextNormalization
@@ -17,13 +19,39 @@ class TensorflowDataset(TensorflowModel):
 
     def __init__(self, architecture, label_type, name, **kwargs):
         self.test_size = kwargs.get('test_size', 0.15)
-        self.buffer_size = kwargs.get('buffer_size', 256)
+        self.num_words = kwargs.get("num_words", 35000)
         self.batch_size = kwargs.get('batch_size', 256)
-        self.label_encoder = self.init_label_encoder(label_type)
+        self.buffer_size = kwargs.get('buffer_size', 256)
+        self.plot_distribution = kwargs.get('plot_distribution', False)
+        self.vocab_size = 0
+        self.number_labels = 0
         self.classes_thresholds = dict()
         self.label_encoder_classes = dict()
         self.label_encoder_classes_number = 0
+        self.label_encoder = self.init_label_encoder(label_type)
+        self.max_labels = kwargs.get("max_labels", self.num_words)
+        self.tokenizer = Tokenizer(filters='', num_words=self.num_words, oov_token='[UNK]')
+        self.splitter = "|".join([
+            "!", "@", "#", "$", "%", "^", "&", "\\(", "\\)", "_", "-", ",", "<", "\\.", ">", "\\?", "`", "~", ":",
+            ";", "\\+", "=", "[", "]", "{", "}", "\n{2,}", "\\s", "\n"
+        ])
         super().__init__(architecture, label_type, name, **kwargs)
+
+    def split_text(self, text):
+        text = text.lower()
+
+        return re.sub(r'(' + self.splitter + ')', r' \1 ', text)
+
+    def predictable_words(self):
+        value = min(self.tokenizer.num_words, self.max_labels)
+        self.number_labels = value
+        words = list(range(1, value))
+
+        return words
+
+    def set_tokenizer(self, text):
+        self.tokenizer.fit_on_texts([text])
+        self.vocab_size = len(self.tokenizer.word_index) + 1
 
     @staticmethod
     def init_label_encoder(label_type):
@@ -91,10 +119,11 @@ class TensorflowDataset(TensorflowModel):
         fig.show()
 
     @timer
-    def generate_dataset(self, data, x_column, y_column):
+    def generate_classification_dataset(self, data, x_column, y_column):
         data = data[data[x_column].notnull()]
         data = data[data[y_column].notnull()]
-        # self.plot_classes_distribution(data, y_column)
+        if self.plot_distribution:
+            self.plot_classes_distribution(data, y_column)
         x = self.clean_x(data[x_column])
         y = self.clean_y(data[y_column]) if self.label_type == "multi-label" else data[y_column]
         self.fit_encoder(y)

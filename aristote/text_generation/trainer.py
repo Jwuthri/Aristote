@@ -3,12 +3,12 @@ import os
 from comet_ml import Experiment
 
 from aristote.text_generation.dataset import BuildDataset
-from aristote.tensorflow_metric_loss_optimizer import get_metrics
-from aristote.tensorflow_models_compile import BaseTensorflowModel
+from aristote.tensorflow_helper.metrics_helper import get_metrics
+from aristote.tensorflow_helper.model_helper import TensorflowModel
 from aristote.settings import API_KEY, PROJECT_NAME, WORKSPACE, MODEL_PATH
 
 
-class Trainer(BaseTensorflowModel):
+class Trainer(TensorflowModel):
 
     def __init__(
         self, architecture, number_labels_max, data, feature, test_size=0.1,

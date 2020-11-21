@@ -15,3 +15,9 @@ streamlit==0.65.0
 umap-learn==0.3.10
 contractions==0.0.25
 python-dotenv==0.14.0
+numpy~=1.18.5
+matplotlib~=3.3.2
+tensorflow~=2.3.1
+plotly~=4.12.0
+tqdm~=4.50.2
+setuptools~=50.3.0
