@@ -17,7 +17,7 @@ class BayesianOptimizer(TensorflowPredictor):
 
     def __init__(self, name, model_load, dataset_path, x, y, **kwargs):
         self.y, self.x = y, x
-        self.samples = kwargs.get("samples", 10_000)
+        self.samples = kwargs.get("samples", 30_000)
         self.average = kwargs.get("average", "weighted")
         self.metric = kwargs.get('metric', 'f1')
         for k, v in kwargs.items():
@@ -70,7 +70,7 @@ class BayesianOptimizer(TensorflowPredictor):
 
 
 if __name__ == '__main__':
-    data_path = os.path.join(DATASET_PATH, "sentiment.csv")
-    model_path = "2020_10_25_13_26_39_sentiment"
-    bo = BayesianOptimizer(name=model_path, model_load=True, dataset_path=data_path, x="feature", y="multi")
+    data_path = os.path.join(DATASET_PATH, "sentiment/sentiment.csv")
+    model_path = "2020_11_30_17_41_50_sentiment"
+    bo = BayesianOptimizer(name=model_path, model_load=True, dataset_path=data_path, x="x", y="y")
     bo.bayesian_optimizer(save_thresholds=True)

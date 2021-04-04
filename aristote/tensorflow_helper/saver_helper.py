@@ -23,7 +23,7 @@ class TensorflowLoaderSaver(object):
         self.paths = self.define_paths()
 
     @staticmethod
-    def use_gpu(use_gpu=False):
+    def use_gpu(use_gpu=True):
         if use_gpu:
             gpus = tf.config.experimental.list_physical_devices("GPU")
             for gpu in gpus:

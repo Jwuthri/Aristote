@@ -14,6 +14,8 @@ class TensorflowModel(TensorflowLoaderSaver):
         self.embedding_size = kwargs.get('embedding_size', 256)
         self.vocab_size = kwargs.get('vocab_size', 200000)
         self.pretrained_embedding = kwargs.get('pretrained_embedding', True)
+        self.max_labels = kwargs.get("max_labels", None)
+        self.model_type = kwargs.get('model_type', "classification")
         self.model = tf.keras.Sequential()
         model_load = kwargs.pop('model_load', False)
         super().__init__(name, model_load, **kwargs)
@@ -29,12 +31,14 @@ class TensorflowModel(TensorflowLoaderSaver):
         self.model_info['architecture'] = self.architecture
         self.model_info['label_type'] = self.label_type
         self.model_info['label_encoder_classes_number'] = self.label_encoder_classes_number
+        self.model_info['max_labels'] = self.max_labels or self.vocab_size
+        number_cls = self.model_info['max_labels'] if self.model_type == "generation" else self.label_encoder_classes_number
         block = None
+
         for block, unit in self.architecture:
             layer = text_to_layer(block, unit)(layer)
         use_time_distrib = True if block == "TIME_DISTRIB_DENSE" else False
-        output_layer = get_output_layer(
-            self.label_type, units=self.label_encoder_classes_number, use_time_distrib=use_time_distrib)(layer)
+        output_layer = get_output_layer(self.label_type, units=number_cls, use_time_distrib=use_time_distrib)(layer)
         self.model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
 
     def compile_model(self):
@@ -45,11 +49,17 @@ class TensorflowModel(TensorflowLoaderSaver):
                 metrics=["binary_accuracy", "Recall", "Precision"])
         elif self.label_type == "multi-label":
             self.model.compile(
-                optimizer="adam",
+                optimizer="nadam",
                 loss=f1_loss,
                 metrics=[f1_score, "categorical_accuracy", "top_k_categorical_accuracy"])
         else:
-            self.model.compile(
-                optimizer="adam",
-                loss=tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
-                metrics=["categorical_accuracy", "top_k_categorical_accuracy"])
+            if self.model_type != "generation":
+                self.model.compile(
+                    optimizer="adam",
+                    loss=tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
+                    metrics=["categorical_accuracy", "top_k_categorical_accuracy"])
+            else:
+                self.model.compile(
+                    optimizer="adam",
+                    loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                    metrics=["sparse_categorical_accuracy", "sparse_top_k_categorical_accuracy"])

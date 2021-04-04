@@ -1,4 +1,5 @@
 import os
+import tensorflow as tf
 
 import colorful as cf
 from comet_ml import Experiment
@@ -8,17 +9,22 @@ from aristote.tensorflow_helper.metrics_helper import get_metrics
 from aristote.tensorflow_helper.dataset_helper import TensorflowDataset
 from aristote.tensorflow_helper.callbacks_helper import checkpoint_callback, tensorboard_callback
 
+gpus = tf.config.experimental.list_physical_devices("GPU")
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+
 
 class TensorflowTrainer(TensorflowDataset):
     """Module to train model."""
 
     def __init__(self, label_type, name, architecture, **kwargs):
         self.epochs = kwargs.get('epochs', 10)
-        self.use_comet = kwargs.get('use_comet', True)
+        self.use_comet = kwargs.get('use_comet', False)
         self.do_zip_model = kwargs.get('do_zip_model', True)
         self.api_key = kwargs.get('api_key', API_KEY)
         self.project_name = kwargs.get('project_name', PROJECT_NAME)
         self.workspace = kwargs.get('workspace', WORKSPACE)
+        self.model_type = kwargs.get('model_type', "classification")
         self.metrics = dict()
         super().__init__(architecture, label_type, name, **kwargs)
 
@@ -59,13 +65,15 @@ class TensorflowTrainer(TensorflowDataset):
         elif self.label_type == "multi-label":
             metric = "f1_score"
         else:
+            # metric = "sparse_categorical_accuracy"
             metric = "categorical_accuracy"
 
         return metric
 
     def train(self, data, x_col, y_col):
         os.mkdir(self.paths['path'])
-        train_dataset, val_dataset = self.generate_classification_dataset(data, x_col, y_col)
+        dataset_function = f"generate_{self.model_type}_dataset"
+        train_dataset, val_dataset = getattr(self, dataset_function)(data, x_col, y_col)
         self.build_model()
         self.compile_model()
 
@@ -82,5 +90,6 @@ class TensorflowTrainer(TensorflowDataset):
         self.export_metrics(self.metrics)
         self.export_label_encoder(self.label_encoder)
         self.export_thresholds(self.classes_thresholds)
+        self.export_tokenizer(self.tokenizer)
         if self.do_zip_model:
             self.zip_model()

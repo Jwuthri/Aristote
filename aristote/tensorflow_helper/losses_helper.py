@@ -94,19 +94,6 @@ def nmt_loss(y_pred, y):
     return tf.reduce_mean(mask * loss)
 
 
-def huber_loss_tuning(threshold=1):
-
-    def huber_loss(y_true, y_pred):
-        error = y_true - y_pred
-        is_smaller = tf.abs(error) <= threshold
-        small_error_loss = tf.square(error) / 2
-        big_error_loss = threshold * (tf.abs(error) - (0.5 * threshold))
-
-        return tf.where(is_smaller, small_error_loss, big_error_loss)
-
-    return huber_loss
-
-
 class HuberLoss(Loss):
 
     def __init__(self, threshold=1):
@@ -135,16 +122,54 @@ class ContrastiveLoss(Loss):
         return tf.reduce_mean(y_true * square_pred + (1 - y_true) * margin_square)
 
 
-class RMSE(Loss):
+class RootMeanSquareLoss(Loss):
 
     def __init__(self, smooth=1):
         self.smooth = smooth
         super().__init__()
 
-    def call(self, y_true, y_pred):
+    @staticmethod
+    def call(y_true, y_pred):
         error = y_true - y_pred
         sqr_error = tf.square(error)
         mean_sqr_error = tf.reduce_mean(sqr_error)
         sqrt_mean_sqr_error = tf.sqrt(mean_sqr_error)
 
         return sqrt_mean_sqr_error
+
+
+class F1Loss(Loss):
+
+    def __init__(self, label_smoothing=0.1):
+        self.label_smoothing = label_smoothing
+        super().__init__()
+
+    def call(self, y_true, y_pred):
+        y_pred = tf.cast(y_pred, tf.float32)
+        y_true = tf.cast(y_true, tf.float32)
+        label_smoothing = ops.convert_to_tensor_v2(self.label_smoothing, dtype=tf.float32)
+
+        def _smooth_labels():
+            num_classes = math_ops.cast(array_ops.shape(y)[-1], y_pred.dtype)
+            return y * (1.0 - label_smoothing) + (label_smoothing / num_classes)
+
+        y = smart_cond.smart_cond(label_smoothing, _smooth_labels, lambda: y)
+        tp = tf.reduce_sum(y_pred * y_true, axis=0)
+        fp = tf.reduce_sum(y_pred * (1 - y_true), axis=0)
+        fn = tf.reduce_sum((1 - y_pred) * y_true, axis=0)
+        soft_f1 = 2 * tp / (2 * tp + fn + fp + K.epsilon())
+        loss = tf.reduce_mean(1 - soft_f1)
+
+        return loss
+
+
+class MyCustomLoss(Loss):
+
+    def __init__(self):
+        super().__init__()
+
+    def call(self, y_true, y_pred):
+        y_pred = tf.cast(y_pred, tf.float32)
+        y_true = tf.cast(y_true, tf.float32)
+
+        return y_true - y_pred
